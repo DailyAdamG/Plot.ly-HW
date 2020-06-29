@@ -9,7 +9,7 @@ d3.json("/samples.json").then(function(data) {
     for (var i=0; i < idList.length; i++) {
         dropdownMenu.append("option").text(idList[i])
     };
-});
+
 
 //Used to grab id from dropdown
 
@@ -17,27 +17,49 @@ d3.select("#selDataset").on("change", buildPlot);
 
 function buildPlot() {
 
-    var dropdownMenu = d3.select("#selDataset").node();
+    var dropdownMenu = d3.select("#selDataset");
 
     var dataset = dropdownMenu.property("value");
 
-    var test_subject = dataset;
-
-    buildPlot(test_subject);
+    updatePlotly(dataset);
 }
 
-//Building horizontal bar chart
+var metadata = data.metadata;
+var test = data.samples;
 
-d3.json("/samples.json").then(function(data) {
+var demInfo = d3.select("#sample-metadata")
+demInfo.append("p").text(`ID: ${idList[0]}`);
+demInfo.append("p").text(`Ethnicity: ${metadata[0]["ethnicity"]}`);
+demInfo.append("p").text(`Gender: ${metadata[0]["gender"]}`);
+demInfo.append("p").text(`Age: ${metadata[0]["age"]}`);
+demInfo.append("p").text(`Location: ${metadata[0]["location"]}`);
+demInfo.append("p").text(`bbtype: ${metadata[0]["bbtype"]}`);
+demInfo.append("p").text(`wfreq: ${metadata[0]["wfreq"]}`);
 
-    var dropdownMenu = d3.select("#selDataset").node();
-
-    var dataset = dropdownMenu.property("value");
-
-    var test_subject = dataset;
-
-    // Grab values from the response json object to build the plots
-    var sample_values = data.samples[test_subject].sample_values;
-    console.log(sample_values); 
-
-  });
+buildPlot()
+function buildPlot() {
+    var otuIds = test[0]["otu_ids"]
+    slicedOtuIds = otuIds.slice(0, 10)
+    var sampleValues = test[0]["sample_values"]
+    slicedSampleValues = sampleValues.slice(0, 10)
+    var trace1 = {
+        x: slicedSampleValues,
+        y: slicedOtuIds.toString(),
+        type: "bar",
+        orientation: "h"
+    };
+    var data = [trace1]
+    Plotly.newPlot("bar", data);
+    var trace2 = {
+        x: otuIds,
+        y: sampleValues,
+        mode: "markers",
+        marker: {
+            size: sampleValues,
+            color: otuIds
+        }
+    };
+    var data = [trace2]
+    Plotly.newPlot("bubble", data)
+    };
+});
